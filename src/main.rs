@@ -11,7 +11,6 @@ fn main() {
             process::exit(1);
         }
     };
-    //let key = String::from("408f3f7ccf3144af97d150358212910");
 
     let loc = match Location::new(args) {
         Ok(loc) => loc,
