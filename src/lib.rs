@@ -1,7 +1,7 @@
 mod weather_report;
-use weather_report::WeatherReport;
 use std::collections::HashMap;
 use std::error::Error;
+use weather_report::WeatherReport;
 
 pub struct WeatherFetcher {
     city: String,
@@ -15,7 +15,7 @@ pub struct WeatherFetcher {
 
 impl WeatherFetcher {
     pub fn new() -> Self {
-        Self { 
+        Self {
             city: String::new(),
             state: String::new(),
             country: String::new(),
@@ -30,22 +30,23 @@ impl WeatherFetcher {
         self.city.push_str(city);
         self.state.push_str(state);
         self.country.push_str(country);
-
     }
 
     pub fn set_key(&mut self, key: &String) {
         self.key.push_str(key);
     }
 
-   fn generate_link(&mut self) -> Result<String, &str> {
+    fn _generate_link(&mut self) -> Result<String, &str> {
         if !self.city.is_empty() && !self.state.is_empty() && !self.key.is_empty() {
-            let url = format!("http://api.weatherapi.com/v1/current.json?key={}&q={},{},{}&aqi=no", self.key, self.city, self.state, self.country );
+            let url = format!(
+                "http://api.weatherapi.com/v1/current.json?key={}&q={},{},{}&aqi=no",
+                self.key, self.city, self.state, self.country
+            );
             self.url.push_str(&url);
             Ok(url)
         } else {
             Err("Unanble to create url.")
         }
-        
     }
 
     fn generate_link_forecast(&mut self) -> Result<String, &str> {
@@ -57,17 +58,19 @@ impl WeatherFetcher {
         } else {
             Err("Unanble to create url.")
         }
-        
     }
 
     fn generate_report(&mut self) {
         match self.generate_link_forecast() {
             Ok(url) => {
-                let json: WeatherReport = reqwest::blocking::get(url).expect("error fetching data").json().expect("error parsing");
+                let json: WeatherReport = reqwest::blocking::get(url)
+                    .expect("error fetching data")
+                    .json()
+                    .expect("error parsing");
                 self.report = json;
                 self.report_valid = true;
-            },
-            Err(e) => panic!("Error: {}", e)
+            }
+            Err(e) => panic!("Error: {}", e),
         }
     }
 
@@ -80,7 +83,7 @@ impl WeatherFetcher {
             self.generate_report();
         }
         let rep = &self.report.current;
-        
+
         let map = HashMap::from([
             ("temp_c".to_string(), rep.temp_c.to_string()),
             ("temp_f".to_string(), rep.temp_f.to_string()),
@@ -93,39 +96,63 @@ impl WeatherFetcher {
             ("gust_mph".to_string(), rep.gust_mph.to_string()),
         ]);
         Ok(map)
-        
     }
 
     pub fn get_weather_forecast(&mut self) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
         if !self.report_valid {
             self.generate_report();
         }
-        
+
         let forecast_arr = &self.report.forecast.forecastday;
-        
-        let mut return_vec =  Vec::with_capacity(3);
+
+        let mut return_vec = Vec::with_capacity(3);
 
         for day_report in forecast_arr.iter() {
             let map = HashMap::from([
                 ("date".to_string(), day_report.date.clone()),
-                ("maxtemp_c".to_string(), day_report.day.maxtemp_c.to_string()),
-                ("maxtemp_f".to_string(), day_report.day.maxtemp_f.to_string()),
-                ("mintemp_c".to_string(), day_report.day.mintemp_c.to_string()),
-                ("mintemp_f".to_string(), day_report.day.mintemp_f.to_string()),
-                ("totalpreicp_mm".to_string(), day_report.day.totalprecip_mm.to_string()),
-                ("totalpreicp_in".to_string(), day_report.day.totalprecip_in.to_string()),
-                ("daily_chance_of_rain".to_string(), day_report.day.daily_chance_of_rain.to_string()),
-                ("daily_chance_of_snow".to_string(), day_report.day.daily_chance_of_snow.to_string()),
-                ("condition".to_string(), day_report.day.condition.text.clone())
+                (
+                    "maxtemp_c".to_string(),
+                    day_report.day.maxtemp_c.to_string(),
+                ),
+                (
+                    "maxtemp_f".to_string(),
+                    day_report.day.maxtemp_f.to_string(),
+                ),
+                (
+                    "mintemp_c".to_string(),
+                    day_report.day.mintemp_c.to_string(),
+                ),
+                (
+                    "mintemp_f".to_string(),
+                    day_report.day.mintemp_f.to_string(),
+                ),
+                (
+                    "totalpreicp_mm".to_string(),
+                    day_report.day.totalprecip_mm.to_string(),
+                ),
+                (
+                    "totalpreicp_in".to_string(),
+                    day_report.day.totalprecip_in.to_string(),
+                ),
+                (
+                    "daily_chance_of_rain".to_string(),
+                    day_report.day.daily_chance_of_rain.to_string(),
+                ),
+                (
+                    "daily_chance_of_snow".to_string(),
+                    day_report.day.daily_chance_of_snow.to_string(),
+                ),
+                (
+                    "condition".to_string(),
+                    day_report.day.condition.text.clone(),
+                ),
             ]);
 
             return_vec.push(map)
         }
         Ok(return_vec)
-
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -142,8 +169,8 @@ mod tests {
         let mut wf = WeatherFetcher::new();
         wf.set_location(&city, &state, &country);
         wf.set_key(&key);
-        
-        assert_eq!(result, wf.generate_link().unwrap());
+
+        assert_eq!(result, wf._generate_link().unwrap());
     }
     #[test]
     #[should_panic]
@@ -153,10 +180,10 @@ mod tests {
         let country = String::from("USA");
         let mut wf = WeatherFetcher::new();
         wf.set_location(&city, &state, &country);
-        
-        match wf.generate_link() {
+
+        match wf._generate_link() {
             Ok(i) => drop(i),
-            Err(e) => panic!("Error: {}", e)
+            Err(e) => panic!("Error: {}", e),
         };
     }
 
@@ -166,7 +193,7 @@ mod tests {
         let mut wf = WeatherFetcher::new();
         match wf.get_weather_current() {
             Ok(i) => drop(i),
-            Err(e) => panic!("Error:{}", e)
+            Err(e) => panic!("Error:{}", e),
         }
     }
 }
