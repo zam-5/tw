@@ -1,8 +1,17 @@
 use std::env;
+use std::fs::read_to_string;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let key = String::from("408f3f7ccf3144af97d150358212910");
+    let key = match read_to_string("./key") {
+        Ok(k) => k,
+        Err(_) => {
+            eprintln!("Key not found");
+            process::exit(1);
+        }
+    };
+    //let key = String::from("408f3f7ccf3144af97d150358212910");
 
     let loc = match Location::new(args) {
         Ok(loc) => loc,
