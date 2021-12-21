@@ -73,7 +73,7 @@ impl WeatherFetcher {
         }
     }
 
-    pub fn print(&self) {
+    pub fn _print(&self) {
         println!("{:?}", self.report);
     }
 
