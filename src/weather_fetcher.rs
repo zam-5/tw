@@ -25,13 +25,13 @@ impl WeatherFetcher {
         }
     }
 
-    pub fn set_location(&mut self, city: &String, state: &String, country: &String) {
+    pub fn set_location(&mut self, city: &str, state: &str, country: &str) {
         self.city.push_str(city);
         self.state.push_str(state);
         self.country.push_str(country);
     }
 
-    pub fn set_key(&mut self, key: &String) {
+    pub fn set_key(&mut self, key: &str) {
         self.key.push_str(key);
     }
 
@@ -77,7 +77,7 @@ impl WeatherFetcher {
     }
 
     pub fn get_weather_current(&mut self) -> Result<HashMap<String, String>, Box<dyn Error>> {
-        if let None = self.report {
+        if self.report.is_none() {
             self.generate_report();
         }
 
@@ -98,7 +98,7 @@ impl WeatherFetcher {
     }
 
     pub fn get_weather_forecast(&mut self) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
-        if let None = self.report {
+        if self.report.is_none() {
             self.generate_report();
         }
 
