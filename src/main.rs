@@ -1,6 +1,9 @@
 use std::env;
 use std::fs::read_to_string;
 use std::process;
+mod weather_fetcher;
+mod weather_report;
+use weather_fetcher::WeatherFetcher;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -17,7 +20,7 @@ fn main() {
         Err(str) => panic!("Error: {}", str),
     };
 
-    let mut wf = tw::WeatherFetcher::new();
+    let mut wf = WeatherFetcher::new();
     wf.set_location(&loc.city, &loc.state, &loc.country);
     wf.set_key(&key);
 

@@ -1,7 +1,6 @@
-mod weather_report;
+use crate::weather_report::WeatherReport;
 use std::collections::HashMap;
 use std::error::Error;
-use weather_report::WeatherReport;
 
 pub struct WeatherFetcher {
     city: String,
