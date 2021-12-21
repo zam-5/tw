@@ -8,8 +8,8 @@ pub struct WeatherFetcher {
     country: String,
     key: String,
     url: String,
-    report: WeatherReport,
-    report_valid: bool,
+    report: Option<WeatherReport>,
+    //report_valid: bool,
 }
 
 impl WeatherFetcher {
@@ -20,8 +20,8 @@ impl WeatherFetcher {
             country: String::new(),
             key: String::new(),
             url: String::new(),
-            report: WeatherReport::default(),
-            report_valid: false,
+            report: None,
+            //report_valid: false,
         }
     }
 
@@ -66,8 +66,7 @@ impl WeatherFetcher {
                     .expect("error fetching data")
                     .json()
                     .expect("error parsing");
-                self.report = json;
-                self.report_valid = true;
+                self.report = Some(json);
             }
             Err(e) => panic!("Error: {}", e),
         }
@@ -78,10 +77,11 @@ impl WeatherFetcher {
     }
 
     pub fn get_weather_current(&mut self) -> Result<HashMap<String, String>, Box<dyn Error>> {
-        if !self.report_valid {
+        if let None = self.report {
             self.generate_report();
         }
-        let rep = &self.report.current;
+
+        let rep = &self.report.as_ref().unwrap().current;
 
         let map = HashMap::from([
             ("temp_c".to_string(), rep.temp_c.to_string()),
@@ -98,11 +98,14 @@ impl WeatherFetcher {
     }
 
     pub fn get_weather_forecast(&mut self) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
-        if !self.report_valid {
+        if let None = self.report {
             self.generate_report();
         }
 
-        let forecast_arr = &self.report.forecast.forecastday;
+        let forecast_arr = match &self.report {
+            Some(rep) => &rep.forecast.forecastday,
+            None => return Err("no report".into()),
+        };
 
         let mut return_vec = Vec::with_capacity(3);
 
