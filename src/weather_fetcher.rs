@@ -4,9 +4,9 @@ use std::error::Error;
 use std::process;
 
 pub struct WeatherFetcher {
-    city: String,
-    state: String,
-    country: String,
+    _city: String,
+    _state: String,
+    _country: String,
     locstr: String,
     key: String,
     url: String,
@@ -17,9 +17,9 @@ pub struct WeatherFetcher {
 impl WeatherFetcher {
     pub fn new() -> Self {
         Self {
-            city: String::new(),
-            state: String::new(),
-            country: String::new(),
+            _city: String::new(),
+            _state: String::new(),
+            _country: String::new(),
             locstr: String::new(),
             key: String::new(),
             url: String::new(),
@@ -29,9 +29,9 @@ impl WeatherFetcher {
     }
 
     pub fn _set_location(&mut self, city: &str, state: &str, country: &str) {
-        self.city.push_str(city);
-        self.state.push_str(state);
-        self.country.push_str(country);
+        self._city.push_str(city);
+        self._state.push_str(state);
+        self._country.push_str(country);
     }
 
     pub fn set_location_vec(&mut self, loc: Vec<String>) {
@@ -48,10 +48,10 @@ impl WeatherFetcher {
     }
 
     fn _generate_link(&mut self) -> Result<String, &str> {
-        if !self.city.is_empty() && !self.state.is_empty() && !self.key.is_empty() {
+        if !self._city.is_empty() && !self._state.is_empty() && !self.key.is_empty() {
             let url = format!(
                 "http://api.weatherapi.com/v1/current.json?key={}&q={},{},{}&aqi=no",
-                self.key, self.city, self.state, self.country
+                self.key, self._city, self._state, self._country
             );
             self.url.push_str(&url);
             Ok(url)
@@ -60,10 +60,23 @@ impl WeatherFetcher {
         }
     }
 
-    fn generate_link_forecast(&mut self) -> Result<String, &str> {
-        if !self.city.is_empty() && !self.state.is_empty() && !self.key.is_empty() {
+    fn _generate_link_forecast(&mut self) -> Result<String, &str> {
+        if !self._city.is_empty() && !self._state.is_empty() && !self.key.is_empty() {
             let url = format!("http://api.weatherapi.com/v1/forecast.json?key={}&q={},{},{}&days=3&aqi=no&alerts=no
-            ", self.key, self.city, self.state, self.country );
+            ", self.key, self._city, self._state, self._country );
+            self.url.push_str(&url);
+            Ok(url)
+        } else {
+            Err("Unanble to create url.")
+        }
+    }
+
+    fn generate_link_from_arr(&mut self) -> Result<String, &str> {
+        if !self.locstr.is_empty() {
+            let url = format!(
+                "http://api.weatherapi.com/v1/forecast.json?key={}&q={}&days=3&aqi=no&alerts=no",
+                self.key, self.locstr
+            );
             self.url.push_str(&url);
             Ok(url)
         } else {
@@ -72,7 +85,7 @@ impl WeatherFetcher {
     }
 
     fn generate_report(&mut self) {
-        match self.generate_link_forecast() {
+        match self.generate_link_from_arr() {
             Ok(url) => {
                 let json: WeatherReport = reqwest::blocking::get(url)
                     .expect("error fetching data")
