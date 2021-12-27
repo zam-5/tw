@@ -2,14 +2,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct WeatherReport {
-    location: Location,
+    pub location: Location,
     pub current: CurrentWeather,
     pub forecast: ForecastArr,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-struct Location {
-    name: String,
+pub struct Location {
+    pub name: String,
     region: String,
     country: String,
     lat: f64,

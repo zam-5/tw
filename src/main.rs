@@ -7,30 +7,28 @@ use weather_fetcher::WeatherFetcher;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+
     let key = match read_to_string("./key") {
         Ok(k) => k,
-        Err(_) => {
-            eprintln!("Key not found");
-            process::exit(1);
-        }
-    };
-
-    let loc = match Location::new(args) {
-        Ok(loc) => loc,
-        Err(str) => panic!("Error: {}", str),
+        Err(_) => match env::var("TW_KEY") {
+            Ok(key) => key,
+            Err(_) => {
+                eprintln!("Key not found");
+                process::exit(1);
+            }
+        },
     };
 
     let mut wf = WeatherFetcher::new();
-    wf.set_location(&loc.city, &loc.state, &loc.country);
+    wf.set_location_vec(args);
     wf.set_key(&key);
 
     let weather_forcast = wf.get_weather_forecast().unwrap();
     let weather_current = wf.get_weather_current().unwrap();
 
     println!(
-        "\tIn {}, {} it is {} degrees and {}.",
-        &loc.city,
-        &loc.state.to_uppercase(),
+        "\tIn {} it is {}°F and {}.",
+        wf.get_report_location(),
         weather_current
             .get("temp_f")
             .expect("Temperature not found"),
@@ -65,30 +63,5 @@ fn main() {
             item.get("daily_chance_of_rain").expect("rain not found"),
             item.get("daily_chance_of_snow").expect("snow not found")
         );
-    }
-}
-struct Location {
-    pub city: String,
-    pub state: String,
-    pub country: String,
-}
-
-impl Location {
-    pub fn new(args: Vec<String>) -> Result<Location, String> {
-        let country = match env::var("COUNTRY") {
-            Ok(c) => c,
-            Err(_e) => String::from("USA"),
-        };
-
-        match args.len() {
-            1 => Err("Default location not set".to_string()),
-            2 => Err("Please provide a city and a state".to_string()),
-            3 => Ok(Location {
-                city: args[1].to_string(),
-                state: args[2].to_string(),
-                country,
-            }),
-            _ => Err("Too many arguments".to_string()),
-        }
     }
 }

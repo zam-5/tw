@@ -1,11 +1,13 @@
 use crate::weather_report::WeatherReport;
 use std::collections::HashMap;
 use std::error::Error;
+use std::process;
 
 pub struct WeatherFetcher {
     city: String,
     state: String,
     country: String,
+    locstr: String,
     key: String,
     url: String,
     report: Option<WeatherReport>,
@@ -18,6 +20,7 @@ impl WeatherFetcher {
             city: String::new(),
             state: String::new(),
             country: String::new(),
+            locstr: String::new(),
             key: String::new(),
             url: String::new(),
             report: None,
@@ -25,10 +28,19 @@ impl WeatherFetcher {
         }
     }
 
-    pub fn set_location(&mut self, city: &str, state: &str, country: &str) {
+    pub fn _set_location(&mut self, city: &str, state: &str, country: &str) {
         self.city.push_str(city);
         self.state.push_str(state);
         self.country.push_str(country);
+    }
+
+    pub fn set_location_vec(&mut self, loc: Vec<String>) {
+        for i in 1..loc.len() {
+            self.locstr.push_str(&loc[i]);
+            if i != loc.len() - 1 {
+                self.locstr.push(',');
+            }
+        }
     }
 
     pub fn set_key(&mut self, key: &str) {
@@ -154,48 +166,15 @@ impl WeatherFetcher {
         }
         Ok(return_vec)
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_link_gen_pass() {
-        let result = String::from("http://api.weatherapi.com/v1/current.json?key=408f3f7ccf3144af97d150358212910&q=Ames,IA,USA&aqi=no");
-        let city = String::from("Ames");
-        let state = String::from("IA");
-        let country = String::from("USA");
-        let key = String::from("408f3f7ccf3144af97d150358212910");
-
-        let mut wf = WeatherFetcher::new();
-        wf.set_location(&city, &state, &country);
-        wf.set_key(&key);
-
-        assert_eq!(result, wf._generate_link().unwrap());
-    }
-    #[test]
-    #[should_panic]
-    fn test_no_key_set() {
-        let city = String::from("Ames");
-        let state = String::from("IA");
-        let country = String::from("USA");
-        let mut wf = WeatherFetcher::new();
-        wf.set_location(&city, &state, &country);
-
-        match wf._generate_link() {
-            Ok(i) => drop(i),
-            Err(e) => panic!("Error: {}", e),
+    pub fn get_report_location(&self) -> String {
+        let loc = match &self.report {
+            Some(rep) => rep.location.name.clone(),
+            None => {
+                eprintln!("Report not found");
+                process::exit(1);
+            }
         };
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_get_weather_method() {
-        let mut wf = WeatherFetcher::new();
-        match wf.get_weather_current() {
-            Ok(i) => drop(i),
-            Err(e) => panic!("Error:{}", e),
-        }
+        loc
     }
 }
