@@ -8,6 +8,11 @@ use weather_fetcher::WeatherFetcher;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    if args.len() < 2 {
+        eprintln!("No location entered");
+        process::exit(0);
+    }
+
     let key = match read_to_string("./key") {
         Ok(k) => k,
         Err(_) => match env::var("TW_KEY") {
