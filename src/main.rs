@@ -59,14 +59,22 @@ fn main() {
             .expect("Feels like not found"),
     );
 
+    let mut i = 0;
     for item in weather_forcast.iter() {
+        let day_str = match i {
+            0 => "Today, ",
+            1 => "Tomorrow, ",
+            _ => ""
+        };
         println!(
-            "\t{}:\n\tHigh: {}, Low: {}\n\tChance of Rain/Snow: {}%/{}%\n",
+            "\t{}{}:\n\tHigh: {}, Low: {}\n\tChance of Rain/Snow: {}%/{}%\n",
+            day_str,
             item.get("date").expect("date not found"),
             item.get("maxtemp_f").expect("high not found"),
             item.get("mintemp_f").expect("low not found"),
             item.get("daily_chance_of_rain").expect("rain not found"),
             item.get("daily_chance_of_snow").expect("snow not found")
         );
+        i += 1;
     }
 }
